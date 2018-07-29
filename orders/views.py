@@ -47,6 +47,7 @@ def dish(request):
             'max_global_toppings': item.dish.max_global_toppings,
             'min_local_toppings': item.dish.min_local_toppings,
             'max_local_toppings': item.dish.max_local_toppings,
+            'topping_price_is_included': item.dish.menu_section.topping_price_is_included
         }
 
         min_max_and_lists = [

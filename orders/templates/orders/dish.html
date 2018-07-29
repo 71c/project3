@@ -5,25 +5,6 @@
 {% block title %}Home{% endblock %}
 
 
-
-{% block script %}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('Small-o').onclick = () => {
-    document.getElementById('price').innerHTML = "{{ sizes_and_prices.Small }}";
-  };
-  document.getElementById('Large-o').onclick = () => {
-    document.getElementById('price').innerHTML = "{{ sizes_and_prices.Large }}";
-  };
-
-});
-</script>
-{% endblock %}
-
-
-
-
-
 {% block content %}
 
 <h2>{{ dish_name }}</h2>
@@ -63,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <select>
         <option value="">None</option>
       {% for topping in topping_list %}
-        <option value="{{topping}}">{{topping.name}}</option>
+        <option value="{{topping}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
       {% endfor %}
       </select>
      <!--radios-->
@@ -71,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       {% for topping in topping_list %}
         <div class="custom-control custom-radio" id="{{topping}}">
           <input type="radio" id="{{topping}}2" name="toppings" class="custom-control-input">
-          <label class="custom-control-label" for="{{topping}}2" >{{topping.name}}</label>
+          <label class="custom-control-label" for="{{topping}}2" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
         </div>
       {% endfor %}
     <!--checkboxes-->
@@ -79,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       {% for topping in topping_list %}
         <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="{{topping}}">
-          <label class="form-check-label" for="{{topping}}">{{topping.name}}</label>
+          <label class="form-check-label" for="{{topping}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
         </div>
       {% endfor %}
     {% endif %}
