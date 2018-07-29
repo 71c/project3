@@ -1,0 +1,67 @@
+{% extends 'orders/base.html' %}
+
+
+
+{% block title %}Home{% endblock %}
+
+
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('small').onclick = () => {
+    document.getElementById('price').innerHTML = "{{ dish.price_small }}";
+  };
+  document.getElementById('large').onclick = () => {
+    document.getElementById('price').innerHTML = "{{ dish.price_large }}";
+  };
+
+});
+</script>
+{% endblock %}
+
+
+
+
+
+{% block content %}
+
+
+<h2>{{ dish }}</h2>
+
+{% if dish.price == None %}
+<h5>Choose the size</h5>
+<div class="custom-control custom-radio custom-control-inline" id="small">
+  <input type="radio" id="customRadioInline1" name="customRadioInline1" class="custom-control-input">
+  <label class="custom-control-label" for="customRadioInline1" >Small</label>
+</div>
+<div class="custom-control custom-radio custom-control-inline" id="large">
+  <input type="radio" id="customRadioInline2" name="customRadioInline1" class="custom-control-input">
+  <label class="custom-control-label" for="customRadioInline2">Large</label>
+</div>
+{% endif %}
+
+{% for topping in available_toppings %}
+<div class="form-group form-check">
+  <input type="checkbox" class="form-check-input" id="{{topping}}">
+  <label class="form-check-label" for="{{topping}}">{{topping.name}}</label>
+</div>
+{% endfor %}
+
+<!--{% for i in topping_range %}-->
+<!--<select>-->
+<!--  {% for topping in available_toppings %}-->
+<!--  <option value="{{topping.name}}">{{topping.name}}</option>-->
+<!--  {% endfor %}-->
+<!--</select>-->
+<!--{% endfor %}-->
+
+
+<p id="price">
+  {% if dish.price != None %}
+  {{ dish.price }}
+  {% endif %}
+</p>
+
+
+{% endblock %}
