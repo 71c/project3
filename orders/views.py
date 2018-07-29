@@ -11,12 +11,9 @@ def menu(request):
 
     menu = {
         menu_section: {
-            'items': list(menu_section.dishes_included.all()) + list(menu_section.toppings_included.all()),
-            'toppings': list(menu_section.toppings_included.all()),
-            'dishes': list(menu_section.dishes_included.all()),
+            'dishes': menu_section.dishes_included.all(),
             'there_are_one_price_dishes': any(dish.price != None for dish in menu_section.dishes_included.all()),
             'topping_price_is_included': menu_section.topping_price_is_included,
-            'there_are_only_toppings': len(menu_section.dishes_included.all()) == 0
         }
         for menu_section in MenuSection.objects.all()
     }
@@ -31,5 +28,37 @@ def dish(request):
     if request.method == 'POST':
         dish_id = request.POST.get('dish_id')
         dish = Dish.objects.get(id=dish_id)
-        return render(request, 'orders/dish.html', {'dish': dish, 'available_toppings': dish.get_available_toppings().all(), 'topping_range': range(dish.max_toppings)})
+
+        item = Item.create(dish)
+        sizes_and_prices = item.get_size_dict()
+        there_is_one_size = len(sizes_and_prices) == 1
+
+        a = {
+            'dish_name': item.dish.name,
+
+            'sizes_and_prices': sizes_and_prices,
+            'sizes_and_prices_items': sizes_and_prices.items(),
+            'there_is_one_size': there_is_one_size,
+
+            'global_available_toppings': item.get_global_available_toppings(),
+            'local_available_toppings': item.get_local_available_toppings(),
+
+            'min_global_toppings': item.dish.min_global_toppings,
+            'max_global_toppings': item.dish.max_global_toppings,
+            'min_local_toppings': item.dish.min_local_toppings,
+            'max_local_toppings': item.dish.max_local_toppings,
+        }
+
+        min_max_and_lists = [
+            (a['min_global_toppings'], a['max_global_toppings'], a['global_available_toppings'], ''),
+            (a['min_local_toppings'], a['max_local_toppings'], a['local_available_toppings'], 'extra ')
+        ]
+
+        print(type(a['sizes_and_prices_items']))
+        single_price = list(a['sizes_and_prices_items'])[0][1]
+
+        a['min_max_and_lists'] = min_max_and_lists
+        a['single_price'] = single_price
+
+        return render(request, 'orders/dish.html', a)
 

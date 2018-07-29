@@ -9,11 +9,11 @@
 {% block script %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('small').onclick = () => {
-    document.getElementById('price').innerHTML = "{{ dish.price_small }}";
+  document.getElementById('Small-o').onclick = () => {
+    document.getElementById('price').innerHTML = "{{ sizes_and_prices.Small }}";
   };
-  document.getElementById('large').onclick = () => {
-    document.getElementById('price').innerHTML = "{{ dish.price_large }}";
+  document.getElementById('Large-o').onclick = () => {
+    document.getElementById('price').innerHTML = "{{ sizes_and_prices.Large }}";
   };
 
 });
@@ -26,40 +26,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
 {% block content %}
 
+<h2>{{ dish_name }}</h2>
+<a href="/">back to menu</a>
 
-<h2>{{ dish }}</h2>
+{% if not there_is_one_size %}
+  <h5>Choose the size</h5>
+  <div>
+    {% for size, price in sizes_and_prices_items %}
+    <div class="custom-control custom-radio custom-control-inline">
+      <input type="radio" id="{{size}}-o" name="sizes" class="custom-control-input">
+      <label class="custom-control-label" for="{{size}}-o" >{{ size }} (${{price}}) </label>
+    </div>
+    {% endfor %}
+  </div>
 
-{% if dish.price == None %}
-<h5>Choose the size</h5>
-<div class="custom-control custom-radio custom-control-inline" id="small">
-  <input type="radio" id="customRadioInline1" name="customRadioInline1" class="custom-control-input">
-  <label class="custom-control-label" for="customRadioInline1" >Small</label>
-</div>
-<div class="custom-control custom-radio custom-control-inline" id="large">
-  <input type="radio" id="customRadioInline2" name="customRadioInline1" class="custom-control-input">
-  <label class="custom-control-label" for="customRadioInline2">Large</label>
-</div>
 {% endif %}
 
-{% for topping in available_toppings %}
-<div class="form-group form-check">
-  <input type="checkbox" class="form-check-input" id="{{topping}}">
-  <label class="form-check-label" for="{{topping}}">{{topping.name}}</label>
-</div>
-{% endfor %}
 
-<!--{% for i in topping_range %}-->
-<!--<select>-->
-<!--  {% for topping in available_toppings %}-->
-<!--  <option value="{{topping.name}}">{{topping.name}}</option>-->
-<!--  {% endfor %}-->
-<!--</select>-->
-<!--{% endfor %}-->
+
+
+{% for min, max, topping_list, name in min_max_and_lists %}
+  {% if max > 0 %}
+    <h5>
+      Choose {{name}}topping{% if max > 1 %}s{% endif %}
+
+      {% if min == 0 %}
+      (optional)
+      {% endif %}
+      {% if max > 1 %}
+      (choose {% if min != max %}{% if min == 0 %}up{% else %}{{min}}{% endif %} to {% endif %}{{max}})
+      {% endif %}
+    </h5>
+
+     <!--drop-down (select)-->
+    {% if max == 1 and min == 0 %}
+      <select>
+        <option value="">None</option>
+      {% for topping in topping_list %}
+        <option value="{{topping}}">{{topping.name}}</option>
+      {% endfor %}
+      </select>
+     <!--radios-->
+    {% elif max == 1 %}
+      {% for topping in topping_list %}
+        <div class="custom-control custom-radio" id="{{topping}}">
+          <input type="radio" id="{{topping}}2" name="toppings" class="custom-control-input">
+          <label class="custom-control-label" for="{{topping}}2" >{{topping.name}}</label>
+        </div>
+      {% endfor %}
+    <!--checkboxes-->
+    {% else %}
+      {% for topping in topping_list %}
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="{{topping}}">
+          <label class="form-check-label" for="{{topping}}">{{topping.name}}</label>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+  {% endif %}
+
+{% endfor %}
 
 
 <p id="price">
-  {% if dish.price != None %}
-  {{ dish.price }}
+  {% if there_is_one_size %}
+  {{ single_price }}
   {% endif %}
 </p>
 

@@ -7,7 +7,6 @@ from django.dispatch import receiver
 class Topping(models.Model):
     name = models.CharField(max_length=30)
     price = models.DecimalField(max_digits=4, decimal_places=2)
-    menu_sections = models.ManyToManyField('MenuSection', blank=True, related_name='menu_sections')
 
     def __str__(self):
         return f"{self.name} (${self.price})"
@@ -16,8 +15,7 @@ class Topping(models.Model):
 class MenuSection(models.Model):
     title = models.CharField(max_length=30)
 
-    available_toppings = models.ManyToManyField(Topping, blank=True, related_name='available_toppings')
-    toppings_included = models.ManyToManyField(Topping, blank=True, related_name='toppings_included')
+    global_available_toppings = models.ManyToManyField(Topping, blank=True)
 
     topping_price_is_included = models.BooleanField("Prices for toppings are included in the price of the dish")
 
@@ -28,11 +26,13 @@ class MenuSection(models.Model):
 
 
 class Dish(models.Model):
-
     name = models.CharField(max_length=30)
 
-    min_toppings = models.PositiveSmallIntegerField(default=0)
-    max_toppings = models.PositiveSmallIntegerField(default=0)
+    min_global_toppings = models.PositiveSmallIntegerField(default=0)
+    max_global_toppings = models.PositiveSmallIntegerField(default=0)
+
+    min_local_toppings = models.PositiveSmallIntegerField(default=0)
+    max_local_toppings = models.PositiveSmallIntegerField(default=0)
 
     price = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     price_small = models.DecimalField("Small size price", max_digits=4, decimal_places=2, null=True, blank=True)
@@ -40,29 +40,55 @@ class Dish(models.Model):
 
     menu_section = models.ForeignKey(MenuSection, on_delete=models.CASCADE)
 
-    def calculate_price(self, size, toppings):
-        price = {"regular": self.price, "small": self.price_small, "large": self.price_large}[size]
-        if self.topping_price_is_included:
-            return price
-        else:
-            return price + sum(topping.price for topping in toppings)
+    local_available_toppings = models.ManyToManyField(Topping, blank=True)
 
-    def get_available_toppings(self):
-        return self.menu_section.available_toppings
+    def get_global_available_toppings(self):
+        return self.menu_section.global_available_toppings
 
     def __str__(self):
         return f"{self.menu_section}: {self.name}"
 
 class Item(models.Model):
-    SIZE_CHOICES = (
-        ('small', 'Small'),
-        ('large', 'Large'),
-        ('regular', 'Regular')
-    )
 
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
-    size = models.CharField(max_length=10, choices=SIZE_CHOICES)
-    toppings = models.ManyToManyField(Topping, blank=True)
+
+    size_choices = [] # initialized in the create method
+    size = models.CharField(max_length=10, choices=size_choices)
+
+    selected_global_toppings = models.ManyToManyField(Topping, blank=True, related_name='selected_global_toppings')
+    selected_local_toppings = models.ManyToManyField(Topping, blank=True, related_name='selected_local_toppings')
+
+    @classmethod
+    def create(cls, dish):
+        size_choices = []
+        if dish.price != None:
+            size_choices += [('regular', 'Regular')]
+        if dish.price_small != None:
+            size_choices += [('small', 'Small')]
+        if dish.price_large != None:
+            size_choices += [('large', 'Large')]
+        item = cls(
+            dish=dish,
+        )
+        item.size_choices=size_choices
+        return item
+
+    def get_size_dict(self):
+        sizes_and_prices = dict()
+        for size_name, size in self.size_choices:
+            if size == 'Regular':
+                sizes_and_prices['Regular'] = self.dish.price
+            elif size == 'Small':
+                sizes_and_prices['Small'] = self.dish.price_small
+            elif size == 'Large':
+                sizes_and_prices['Large'] = self.dish.price_small
+        return sizes_and_prices
+
+    def get_global_available_toppings(self):
+        return self.dish.get_global_available_toppings().all()
+    def get_local_available_toppings(self):
+        return self.dish.local_available_toppings.all()
+
 
     def calculate_price(self):
         price = {"regular": self.dish.price, "small": self.dish.price_small, "large": self.dish.price_large}[self.size]

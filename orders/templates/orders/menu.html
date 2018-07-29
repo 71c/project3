@@ -59,8 +59,6 @@
 
 {% for menu_section, items in menu %}
 
-{% if not items.there_are_only_toppings %}
-
 <h2>{{ menu_section }}</h2>
 <table>
   {% for dish in items.dishes %}
@@ -77,8 +75,6 @@
   {% endfor %}
 
 </table>
-
-{% endif %}
 
 {% endfor %}
 
