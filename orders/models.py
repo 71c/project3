@@ -55,8 +55,7 @@ class Item(models.Model):
     size_choices = [] # initialized in the create method
     size = models.CharField(max_length=10, choices=size_choices)
 
-    selected_global_toppings = models.ManyToManyField(Topping, blank=True, related_name='selected_global_toppings')
-    selected_local_toppings = models.ManyToManyField(Topping, blank=True, related_name='selected_local_toppings')
+    toppings = models.ManyToManyField(Topping, blank=True)
 
     @classmethod
     def create(cls, dish):
@@ -81,7 +80,7 @@ class Item(models.Model):
             elif size == 'Small':
                 sizes_and_prices['Small'] = self.dish.price_small
             elif size == 'Large':
-                sizes_and_prices['Large'] = self.dish.price_small
+                sizes_and_prices['Large'] = self.dish.price_large
         return sizes_and_prices
 
     def get_global_available_toppings(self):
@@ -89,13 +88,13 @@ class Item(models.Model):
     def get_local_available_toppings(self):
         return self.dish.local_available_toppings.all()
 
-
     def calculate_price(self):
-        price = {"regular": self.dish.price, "small": self.dish.price_small, "large": self.dish.price_large}[self.size]
-        if self.dish.topping_price_is_included:
+        price = {"Regular": self.dish.price, "Small": self.dish.price_small, "Large": self.dish.price_large, "": self.dish.price}[self.size]
+        if self.dish.menu_section.topping_price_is_included:
             return price
         else:
-            return price + sum(topping.price for topping in self.toppings)
+            print(sum(float(topping.price) for topping in self.toppings.all()))
+            return price + sum(float(topping.price) for topping in self.toppings.all())
 
 
 @receiver(post_save, sender=Dish)

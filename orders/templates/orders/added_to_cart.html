@@ -1,0 +1,11 @@
+{% extends 'orders/base.html' %}
+
+{% block title %}Item added to cart{% endblock %}
+
+{% block heading %}
+Item added to cart!
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'cart' %}">View cart</a>
+{% endblock %}

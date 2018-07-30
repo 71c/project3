@@ -127,6 +127,13 @@ LOGIN_REDIRECT_URL = 'menu'
 LOGOUT_REDIRECT_URL = 'menu'
 
 # set these environment variables to an email address and the password for it.
+# I used GMail.
+# Google sent me an email titled "Review blocked sign-in attempt"
+# saying that it didn't let me send the mail because it
+# thought my app was less secure.
+# So I clicked the link in the email that says "allowing access to less secure apps"
+# and switched the setting ON.
+# and then....clicked a link in help
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
@@ -135,3 +142,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+

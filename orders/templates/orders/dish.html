@@ -5,74 +5,151 @@
 {% block title %}Home{% endblock %}
 
 
+{% block script %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById("topping_price_is_included").value === "False" && document.querySelectorAll('[name="toppings"]').length > 0) {
+      setInterval(update_price, 10);
+    }
+
+    var small = document.getElementById('Small');
+    if (small) {
+      small.onclick = () => {
+        document.getElementById('dish_price').value = "{{ sizes_and_prices.Small }}";
+        update_price();
+      };
+    }
+
+    var large = document.getElementById('Large');
+    if (large) {
+      large.onclick = () => {
+        document.getElementById('dish_price').value = "{{ sizes_and_prices.Large }}";
+        update_price();
+      };
+    }
+
+    if (! (small || large)) {
+      if (document.getElementById("there_is_one_size").value === "True")
+        document.getElementById('dish_price').value = "{{ single_price }}";
+    }
+  });
+
+  function update_price() {
+    var dish_price = parseFloat(document.getElementById('dish_price').value);
+    if (! dish_price) {
+      dish_price = parseFloat(document.getElementById('price').innerHTML);
+    }
+    if (! dish_price) {
+      dish_price = 0;
+    }
+
+    // I got this from https://stackoverflow.com/a/16775485/9911203
+    var toppings = document.querySelectorAll('[name="toppings"]');
+
+
+    toppings.forEach(element => {
+      if (element.checked || element.selected) {
+        var topping_price = parseFloat(document.getElementById(element.value).value);
+        dish_price += topping_price;
+      }
+    });
+
+    document.getElementById("price").innerHTML = 'Total: $' + dish_price.toFixed(2);
+  }
+</script>
+{% endblock %}
+
+
+
 {% block content %}
 
-<h2>{{ dish_name }}</h2>
-<a href="/">back to menu</a>
+<form method='POST' action='/add_to_cart/'>
 
-{% if not there_is_one_size %}
-  <h5>Choose the size</h5>
-  <div>
-    {% for size, price in sizes_and_prices_items %}
-    <div class="custom-control custom-radio custom-control-inline">
-      <input type="radio" id="{{size}}-o" name="sizes" class="custom-control-input">
-      <label class="custom-control-label" for="{{size}}-o" >{{ size }} (${{price}}) </label>
+  <input type="hidden" name="dish_id" value="{{ dish_id }}">
+
+  <h2>{{ dish_name }}</h2>
+
+  <a href="/">back to menu</a>
+
+  {% csrf_token %}
+
+  {% if not there_is_one_size %}
+    <h5>Choose the size</h5>
+    <div id="choose_size">
+      {% for size, price in sizes_and_prices_items %}
+      <div class="custom-control custom-radio custom-control-inline" id="refresher">
+        <input type="radio" id="{{size}}" name="size" class="custom-control-input" value="{{ size }}">
+        <label class="custom-control-label" for="{{size}}" name="sizes">{{ size }} (${{price}})</label>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-
-{% endif %}
-
-
-
-
-{% for min, max, topping_list, name in min_max_and_lists %}
-  {% if max > 0 %}
-    <h5>
-      Choose {{name}}topping{% if max > 1 %}s{% endif %}
-
-      {% if min == 0 %}
-      (optional)
-      {% endif %}
-      {% if max > 1 %}
-      (choose {% if min != max %}{% if min == 0 %}up{% else %}{{min}}{% endif %} to {% endif %}{{max}})
-      {% endif %}
-    </h5>
-
-     <!--drop-down (select)-->
-    {% if max == 1 and min == 0 %}
-      <select>
-        <option value="">None</option>
-      {% for topping in topping_list %}
-        <option value="{{topping}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
-      {% endfor %}
-      </select>
-     <!--radios-->
-    {% elif max == 1 %}
-      {% for topping in topping_list %}
-        <div class="custom-control custom-radio" id="{{topping}}">
-          <input type="radio" id="{{topping}}2" name="toppings" class="custom-control-input">
-          <label class="custom-control-label" for="{{topping}}2" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
-        </div>
-      {% endfor %}
-    <!--checkboxes-->
-    {% else %}
-      {% for topping in topping_list %}
-        <div class="form-group form-check">
-          <input type="checkbox" class="form-check-input" id="{{topping}}">
-          <label class="form-check-label" for="{{topping}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
-        </div>
-      {% endfor %}
-    {% endif %}
-
+  {% else %}
+    <input type="hidden" name="size" value="Regular">
   {% endif %}
 
-{% endfor %}
 
+  {% for min, max, topping_list, name in min_max_and_lists %}
+    {% if max > 0 %}
+
+      <!-- for the javascript  -->
+      {% for topping in topping_list %}
+        <input type="hidden" id="{{ topping.id }}" value="{{topping.price}}">
+      {% endfor %}
+
+
+      <h5>
+        Choose {{name}}topping{% if max > 1 %}s{% endif %}
+
+        {% if min == 0 %}
+        (optional)
+        {% endif %}
+        {% if max > 1 %}
+        (choose {% if min != max %}{% if min == 0 %}up{% else %}{{min}}{% endif %} to {% endif %}{{max}})
+        {% endif %}
+      </h5>
+
+       <!--drop-down (select)-->
+      {% if max == 1 and min == 0 %}
+        <select id="refresher">
+          <option value="">None</option>
+        {% for topping in topping_list %}
+          <option name="toppings" value="{{topping.id}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+        {% endfor %}
+        </select>
+       <!--radios-->
+      {% elif max == 1 %}
+        {% for topping in topping_list %}
+          <div class="custom-control custom-radio" id="refresher">
+            <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}}">
+            <label class="custom-control-label" for="{{topping.name}}!" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
+          </div>
+        {% endfor %}
+      <!--checkboxes-->
+      {% else %}
+        {% for topping in topping_list %}
+          <div class="form-group form-check" id="refresher">
+            <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}}">
+            <label class="form-check-label" for="{{topping.name}}!">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+    {% endif %}
+
+  {% endfor %}
+
+
+  <input type="submit" value="add to cart">
+</form>
+
+<input type="hidden" id="dish_price" value="">
+<input type="hidden" id="topping_price_is_included" value="{{ topping_price_is_included }}">
+<input type="hidden" id="there_is_one_size" value="{{ there_is_one_size }}">
+<input type="hidden" id="single_price" value="{{ single_price }}">
 
 <p id="price">
   {% if there_is_one_size %}
-  {{ single_price }}
+  Total: ${{ single_price }}
   {% endif %}
 </p>
 

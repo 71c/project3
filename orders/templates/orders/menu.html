@@ -4,59 +4,6 @@
 
 {% block content %}
 
-
-<!--{% for menu_section, items in menu %}-->
-
-<!--{% if not items.there_are_only_toppings %}-->
-
-<!--<h2>{{ menu_section }}</h2>-->
-<!--<table>-->
-
-<!--  <tr>-->
-<!--    <th></th>-->
-<!--    {% if items.there_are_one_price_dishes %}-->
-<!--    <th>price</th>-->
-<!--    {% else %}-->
-<!--    <th>small</th>-->
-<!--    <th>large</th>-->
-<!--    {% endif %}-->
-<!--  </tr>-->
-
-<!--  {% for dish in items.dishes %}-->
-<!--  <tr>-->
-<!--    <td>{{ dish.name }}</td>-->
-
-<!--    {% if dish.price != None %}-->
-<!--    <td>{{ dish.price }}</td>-->
-<!--    {% else %}-->
-<!--    <td>{{ dish.price_small }}</td>-->
-<!--    <td>{{ dish.price_large }}</td>-->
-<!--    {% endif %}-->
-
-
-<!--  </tr>-->
-<!--  {% endfor %}-->
-
-<!--  {% for topping in items.toppings %}-->
-<!--  <tr>-->
-<!--    <td>{{ topping.name }}</td>-->
-<!--    {% if not items.topping_price_is_included %}-->
-<!--    <td>{{ topping.price }}</td>-->
-<!--    <td>{{ topping.price }}</td>-->
-<!--    {% endif %}-->
-<!--  </tr>-->
-<!--  {% endfor %}-->
-<!--</table>-->
-
-<!--{% endif %}-->
-
-<!--{% endfor %}-->
-
-
-
-
-
-
 {% for menu_section, items in menu %}
 
 <h2>{{ menu_section }}</h2>

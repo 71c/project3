@@ -2,6 +2,8 @@
 
 
 {% block header %}
+
+<a href="/">menu</a>
 {% if user.is_authenticated %}
   Hi {{ user.username }}!
   <p><a href="{% url 'logout' %}">logout</a></p>
