@@ -1,15 +1,23 @@
 {% extends 'base.html' %}
 
+{% block heading %}
+Pizza Place
+{% endblock %}
 
 {% block header %}
 
-<a href="/">menu</a>
-{% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <p><a href="{% url 'logout' %}">logout</a></p>
+{% if not user.is_authenticated %}
+<div class="alert alert-warning" role="alert">
+  You are not logged in. <a href="{% url 'login' %}">login</a> or <a href="{% url 'signup' %}">sign up</a>
+</div>
 {% else %}
-  <p>You are not logged in</p>
-  <a href="{% url 'login' %}">login</a>
-  <a href="{% url 'signup' %}">sign up</a>
+
+<nav class="nav">
+  <span class="nav-link">Hi <span class="font-weight-bold">{{ user.username }}</span>!</span>
+  <a class="nav-link" href="/">menu</a>
+  <a class="nav-link" href="{% url 'cart' %}">View cart</a>
+  <a class="nav-link" href="{% url 'logout' %}">logout</a>
+</nav>
 {% endif %}
+
 {% endblock %}

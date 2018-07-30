@@ -32,7 +32,6 @@ def dish(request):
 
         item = Item.create(dish)
         sizes_and_prices = item.get_size_dict()
-        print({key: sizes_and_prices[key] for key in sizes_and_prices})
         there_is_one_size = len(sizes_and_prices) == 1
 
         a = {
@@ -56,11 +55,10 @@ def dish(request):
         }
 
         min_max_and_lists = [
-            (a['min_global_toppings'], a['max_global_toppings'], a['global_available_toppings'], ''),
-            (a['min_local_toppings'], a['max_local_toppings'], a['local_available_toppings'], 'extra ')
+            (a['min_global_toppings'], a['max_global_toppings'], a['global_available_toppings'], 'global'),
+            (a['min_local_toppings'], a['max_local_toppings'], a['local_available_toppings'], 'local')
         ]
 
-        print(type(a['sizes_and_prices_items']))
         single_price = list(a['sizes_and_prices_items'])[0][1]
 
         a['min_max_and_lists'] = min_max_and_lists
@@ -72,23 +70,45 @@ def add_to_cart(request):
     post = request.POST
 
     size = post.get('size')
-    topping_ids = post.get('toppings')
-    dish_id = post.get('dish_id')
+    assert size != None
 
+
+    dish_id = post.get('dish_id')
     dish = Dish.objects.get(id=dish_id)
+
     item = Item.create(dish)
     item.save()
     item.size = size
 
+    topping_ids = post.get('toppings')
     if topping_ids != None:
-        for topping in topping_ids:
-            # print(topping)
-            item.toppings.add(Topping.objects.get(id=topping))
+        topping_ids = [id_and_type.split(',') for id_and_type in topping_ids]
+        global_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'global']
+        local_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'local']
+
+        assert dish.min_global_toppings <= len(global_topping_ids) <= dish.max_global_toppings
+        assert dish.min_local_toppings <= len(local_topping_ids) <= dish.max_local_toppings
+
+        if global_topping_ids != None:
+            for topping_id in global_topping_ids:
+                item.toppings.add(Topping.objects.get(id=topping_id))
+        if local_topping_ids != None:
+            for topping_id in local_topping_ids:
+                item.toppings.add(Topping.objects.get(id=topping_id))
+
+
+
+
+
+
+
+
+
+
+    item.save()
 
     current_customer = request.user.customer
     current_customer.cart.add(item)
-
-    item.save()
 
     return redirect('added_to_cart')
 
@@ -98,7 +118,6 @@ def added_to_cart(request):
 def cart(request):
     current_customer = request.user.customer
     customer_cart = current_customer.cart.all()
-    print(customer_cart)
 
     dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
     dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]

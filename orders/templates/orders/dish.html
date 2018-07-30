@@ -67,9 +67,7 @@
 
   <input type="hidden" name="dish_id" value="{{ dish_id }}">
 
-  <h2>{{ dish_name }}</h2>
-
-  <a href="/">back to menu</a>
+  <h3>{{ dish_name }}</h3>
 
   {% csrf_token %}
 
@@ -98,7 +96,7 @@
 
 
       <h5>
-        Choose {{name}}topping{% if max > 1 %}s{% endif %}
+        Choose {% if name == 'local' %}extra {% endif %}topping{% if max > 1 %}s{% endif %}
 
         {% if min == 0 %}
         (optional)
@@ -113,14 +111,14 @@
         <select id="refresher">
           <option value="">None</option>
         {% for topping in topping_list %}
-          <option name="toppings" value="{{topping.id}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+          <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
         {% endfor %}
         </select>
        <!--radios-->
       {% elif max == 1 %}
         {% for topping in topping_list %}
           <div class="custom-control custom-radio" id="refresher">
-            <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}}">
+            <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}},{{name}}">
             <label class="custom-control-label" for="{{topping.name}}!" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
           </div>
         {% endfor %}
@@ -128,7 +126,7 @@
       {% else %}
         {% for topping in topping_list %}
           <div class="form-group form-check" id="refresher">
-            <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}}">
+            <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}},{{name}}">
             <label class="form-check-label" for="{{topping.name}}!">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
           </div>
         {% endfor %}
