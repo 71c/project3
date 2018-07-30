@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
+from django.utils.timezone import now
 
 from accounts.models import *
 
@@ -79,6 +80,7 @@ def add_to_cart(request):
     item.size = size
     item.save()
 
+
     topping_ids = post.getlist('toppings')
     if topping_ids != None:
         topping_ids = [id_and_type.split(',') for id_and_type in topping_ids]
@@ -96,7 +98,15 @@ def add_to_cart(request):
                 item.toppings.add(Topping.objects.get(id=topping_id))
 
     current_customer = request.user.customer
-    current_customer.cart.add(item)
+
+    if current_customer.cart == None:
+        order = Order()
+        order.save()
+        current_customer.cart = order
+        current_customer.save()
+    item.order = current_customer.cart
+
+    item.save()
 
     return redirect('added_to_cart')
 
@@ -105,7 +115,7 @@ def added_to_cart(request):
 
 def cart(request):
     current_customer = request.user.customer
-    customer_cart = current_customer.cart.all()
+    customer_cart = current_customer.cart.item_set.all()
 
     dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
     dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
@@ -116,9 +126,20 @@ def cart(request):
     })
 
 def order(request):
-    current_customer = request.user.customer
-    customer_cart = current_customer.cart.all()
-    order = Order(customer=current_customer)
-    order.save()
-    order.items.set(customer_cart)
-    current_customer.cart.clear()
+    customer = request.user.customer
+
+    # reference the Order to the Customer
+    customer.cart.customer = customer
+    # set the date that the order was placed
+    customer.cart.date = now()
+
+    customer.cart.save()
+
+    # clear cart
+    customer.cart = None
+    customer.save()
+
+    return redirect('order_placed')
+
+def order_placed(request):
+    return render(request, 'orders/order_placed.html')

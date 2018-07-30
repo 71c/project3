@@ -2,6 +2,7 @@
 
 {% block title %}Home{% endblock %}
 
+
 {% block content %}
 
 {% for menu_section, items in menu %}
@@ -17,17 +18,12 @@
           <input type="submit" name='dish' value="{{ dish.name }}" class="btn btn-link">
       </form>
     </td>
-
   </tr>
   {% endfor %}
 
 </table>
 
 {% endfor %}
-
-
-
-
 
 
 {% endblock %}

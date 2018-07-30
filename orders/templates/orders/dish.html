@@ -109,9 +109,9 @@
       {% if max == 1 and min == 0 %}
         <select id="refresher">
           <option value="">None</option>
-        {% for topping in topping_list %}
-          <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
-        {% endfor %}
+          {% for topping in topping_list %}
+            <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+          {% endfor %}
         </select>
        <!--radios-->
       {% elif max == 1 %}
