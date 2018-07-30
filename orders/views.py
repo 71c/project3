@@ -11,8 +11,8 @@ def menu(request):
 
     menu = {
         menu_section: {
-            'dishes': menu_section.dishes_included.all(),
-            'there_are_one_price_dishes': any(dish.price != None for dish in menu_section.dishes_included.all()),
+            'dishes': menu_section.dish_set.all(),
+            'there_are_one_price_dishes': any(dish.price != None for dish in menu_section.dish_set.all()),
             'topping_price_is_included': menu_section.topping_price_is_included,
         }
         for menu_section in MenuSection.objects.all()

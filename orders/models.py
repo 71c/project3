@@ -19,8 +19,6 @@ class MenuSection(models.Model):
 
     topping_price_is_included = models.BooleanField("Prices for toppings are included in the price of the dish")
 
-    dishes_included = models.ManyToManyField('Dish', blank=True)
-
     def __str__(self):
         return self.title
 
@@ -56,6 +54,9 @@ class Item(models.Model):
     size = models.CharField(max_length=10, choices=size_choices)
 
     toppings = models.ManyToManyField(Topping, blank=True)
+
+    def __str__(self):
+        return f'{self.dish}' + (f' ({self.size})' if self.size != 'Regular' else '')
 
     @classmethod
     def create(cls, dish):
@@ -96,9 +97,3 @@ class Item(models.Model):
             print(sum(float(topping.price) for topping in self.toppings.all()))
             return price + sum(float(topping.price) for topping in self.toppings.all())
 
-@receiver(post_save, sender=Dish)
-def my_handler(sender, **kwargs):
-    for menu_section in MenuSection.objects.all():
-        menu_section.dishes_included.clear()
-    for dish in Dish.objects.all():
-        dish.menu_section.dishes_included.add(dish)
