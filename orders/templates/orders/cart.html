@@ -16,7 +16,8 @@
 <h5>Total: ${{total}}</h5>
 
 {% if not empty_cart %}
-<form>
+<form method='POST' action='/order/'>
+    {% csrf_token %}
     <button>Order</button>
 </form>
 

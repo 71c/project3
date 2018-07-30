@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import *
+from accounts.models import *
 
 class MenuSectionAdmin(admin.ModelAdmin):
     list_display = ['title', 'topping_price_is_included']
@@ -13,3 +13,4 @@ admin.site.register(MenuSection, MenuSectionAdmin)
 admin.site.register(Dish, DishAdmin)
 admin.site.register(Topping)
 admin.site.register(Item)
+admin.site.register(Order)

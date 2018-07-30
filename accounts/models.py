@@ -11,3 +11,9 @@ class Customer(models.Model):
     email_validated = models.BooleanField(default=False)
 
     cart = models.ManyToManyField(Item, blank=True)
+
+
+class Order(models.Model):
+    items = models.ManyToManyField(Item, blank=True) # cart
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)

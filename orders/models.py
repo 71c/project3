@@ -96,7 +96,6 @@ class Item(models.Model):
             print(sum(float(topping.price) for topping in self.toppings.all()))
             return price + sum(float(topping.price) for topping in self.toppings.all())
 
-
 @receiver(post_save, sender=Dish)
 def my_handler(sender, **kwargs):
     for menu_section in MenuSection.objects.all():

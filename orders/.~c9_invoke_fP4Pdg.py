@@ -4,7 +4,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 
-from accounts.models import *
+from .models import *
+from accounts.models import Customer
 
 # Create your views here.
 def menu(request):
@@ -79,8 +80,10 @@ def add_to_cart(request):
     item.size = size
     item.save()
 
-    topping_ids = post.getlist('toppings')
+    topping_ids = post.get('toppings')
+    print(topping_ids)
     if topping_ids != None:
+        print(topping_ids)
         topping_ids = [id_and_type.split(',') for id_and_type in topping_ids]
         global_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'global']
         local_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'local']
@@ -94,6 +97,17 @@ def add_to_cart(request):
         if local_topping_ids != None:
             for topping_id in local_topping_ids:
                 item.toppings.add(Topping.objects.get(id=topping_id))
+
+
+
+
+
+
+
+
+
+
+    item.save()
 
     current_customer = request.user.customer
     current_customer.cart.add(item)
@@ -114,11 +128,3 @@ def cart(request):
         'total': sum([a[1] for a in dishes_and_prices]),
         'empty_cart': len(dishes_and_prices) == 0
     })
-
-def order(request):
-    current_customer = request.user.customer
-    customer_cart = current_customer.cart.all()
-    order = Order(customer=current_customer)
-    order.save()
-    order.items.set(customer_cart)
-    current_customer.cart.clear()

@@ -46,10 +46,9 @@
     // I got this from https://stackoverflow.com/a/16775485/9911203
     var toppings = document.querySelectorAll('[name="toppings"]');
 
-
     toppings.forEach(element => {
       if (element.checked || element.selected) {
-        var topping_price = parseFloat(document.getElementById(element.value).value);
+        var topping_price = parseFloat(document.getElementById(element.value.split(',')[0]).value);
         dish_price += topping_price;
       }
     });
