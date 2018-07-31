@@ -63,12 +63,20 @@
 {% block content %}
 
 <form method='POST' action='/add_to_cart/'>
+  {% csrf_token %}
 
   <input type="hidden" name="dish_id" value="{{ dish_id }}">
 
   <h3>{{ dish_name }}</h3>
 
-  {% csrf_token %}
+
+  {% if errors %}
+    <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+  {% endif %}
 
   {% if not there_is_one_size %}
     <h5>Choose the size</h5>
@@ -105,31 +113,33 @@
         {% endif %}
       </h5>
 
-       <!--drop-down (select)-->
-      {% if max == 1 and min == 0 %}
-        <select id="refresher">
-          <option value="">None</option>
+      <div class="container-fluid"><div class="row">
+        <!--drop-down (select)-->
+        {% if max == 1 and min == 0 %}
+          <select id="refresher">
+            <option value="">None</option>
+            {% for topping in topping_list %}
+              <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+            {% endfor %}
+          </select>
+        <!--radios-->
+        {% elif max == 1 %}
           {% for topping in topping_list %}
-            <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+            <div class="custom-control custom-radio col-lg-3 col-sm-6" id="refresher">
+              <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}},{{name}}">
+              <label class="custom-control-label" for="{{topping.name}}!" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
+            </div>
           {% endfor %}
-        </select>
-       <!--radios-->
-      {% elif max == 1 %}
-        {% for topping in topping_list %}
-          <div class="custom-control custom-radio" id="refresher">
-            <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}},{{name}}">
-            <label class="custom-control-label" for="{{topping.name}}!" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
-          </div>
-        {% endfor %}
-      <!--checkboxes-->
-      {% else %}
-        {% for topping in topping_list %}
-          <div class="form-group form-check" id="refresher">
-            <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}},{{name}}">
-            <label class="form-check-label" for="{{topping.name}}!">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
-          </div>
-        {% endfor %}
-      {% endif %}
+        <!--checkboxes-->
+        {% else %}
+          {% for topping in topping_list %}
+            <div class="form-group form-check col-lg-3 col-sm-6" id="refresher">
+              <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}},{{name}}">
+              <label class="form-check-label" for="{{topping.name}}!">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div></div>
 
     {% endif %}
 

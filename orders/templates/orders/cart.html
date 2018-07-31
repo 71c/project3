@@ -1,6 +1,10 @@
 {% extends 'orders/base.html' %}
 
 {% block content %}
+
+{% if empty_cart %}
+Your cart is empty!
+{% else %}
 <table>
     <tr>
         <th>item</th>
@@ -15,12 +19,10 @@
 </table>
 <h5>Total: ${{total}}</h5>
 
-{% if not empty_cart %}
 <form method='POST' action='/order/'>
     {% csrf_token %}
     <button>Order</button>
 </form>
 
 {% endif %}
-
 {% endblock %}

@@ -5,6 +5,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.utils.timezone import now
 
+from django.contrib import messages
+
 from accounts.models import *
 
 # Create your views here.
@@ -25,7 +27,7 @@ def menu(request):
     return render(request, 'orders/menu.html', variables)
 
 
-def dish(request):
+def render_dish(request):
     if request.method == 'POST':
         dish_id = request.POST.get('dish_id')
         dish = Dish.objects.get(id=dish_id)
@@ -64,22 +66,49 @@ def dish(request):
         a['min_max_and_lists'] = min_max_and_lists
         a['single_price'] = single_price
 
+        errors = request.POST.get('errors')
+        if errors != None:
+            a['errors'] = errors
+
         return render(request, 'orders/dish.html', a)
 
+
+def password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            messages.success(request, 'Your password was updated successfully!')  # <-
+            return redirect('settings:password')
+        else:
+            messages.warning(request, 'Please correct the error below.')  # <-
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'profiles/change_password.html', {'form': form})
+
+
+
 def add_to_cart(request):
+
+    errors = []
+
+    if not request.user.is_authenticated:
+        errors += ["You're not logged in!"]
+
     post = request.POST
 
     size = post.get('size')
-    assert size != None
 
+    size_selected = size != None
+    if not size_selected:
+        errors += ['You need to pick a size']
 
     dish_id = post.get('dish_id')
     dish = Dish.objects.get(id=dish_id)
-
     item = Item.create(dish)
     item.size = size
     item.save()
-
 
     topping_ids = post.getlist('toppings')
     if topping_ids != None:
@@ -87,8 +116,27 @@ def add_to_cart(request):
         global_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'global']
         local_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'local']
 
-        assert dish.min_global_toppings <= len(global_topping_ids) <= dish.max_global_toppings
-        assert dish.min_local_toppings <= len(local_topping_ids) <= dish.max_local_toppings
+        global_toppings_in_range = dish.min_global_toppings <= len(global_topping_ids) <= dish.max_global_toppings
+        local_toppings_in_range = dish.min_local_toppings <= len(local_topping_ids) <= dish.max_local_toppings
+
+        if not global_toppings_in_range:
+            if dish.min_global_toppings > len(global_topping_ids):
+                errors += ['not enough toppings']
+            else:
+                errors += ['too many toppings']
+        if not local_toppings_in_range:
+            if dish.min_local_toppings > len(local_topping_ids):
+                errors += ['not enough extra toppings']
+            else:
+                errors += ['too many extra toppings']
+
+        if len(errors) > 0:
+            dish_data = {
+              'dish_id': dish_id,
+              'errors': errors
+            }
+            request.POST = dish_data
+            return render_dish(request)
 
         if global_topping_ids != None:
             for topping_id in global_topping_ids:
@@ -96,6 +144,8 @@ def add_to_cart(request):
         if local_topping_ids != None:
             for topping_id in local_topping_ids:
                 item.toppings.add(Topping.objects.get(id=topping_id))
+
+
 
     current_customer = request.user.customer
 
@@ -115,10 +165,13 @@ def added_to_cart(request):
 
 def cart(request):
     current_customer = request.user.customer
-    customer_cart = current_customer.cart.item_set.all()
+    if current_customer.cart == None:
+        dishes_and_prices = []
+    else:
+        customer_cart = current_customer.cart.item_set.all()
+        dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
+        dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
 
-    dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
-    dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
     return render(request, 'orders/cart.html', {
         'cart': dishes_and_prices,
         'total': sum([a[1] for a in dishes_and_prices]),
