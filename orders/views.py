@@ -73,33 +73,15 @@ def render_dish(request):
         return render(request, 'orders/dish.html', a)
 
 
-def password(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            form.save()
-            update_session_auth_hash(request, form.user)
-            messages.success(request, 'Your password was updated successfully!')  # <-
-            return redirect('settings:password')
-        else:
-            messages.warning(request, 'Please correct the error below.')  # <-
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'profiles/change_password.html', {'form': form})
-
-
-
 def add_to_cart(request):
-
     errors = []
+
+    post = request.POST
 
     if not request.user.is_authenticated:
         errors += ["You're not logged in!"]
 
-    post = request.POST
-
     size = post.get('size')
-
     size_selected = size != None
     if not size_selected:
         errors += ['You need to pick a size']
@@ -108,13 +90,16 @@ def add_to_cart(request):
     dish = Dish.objects.get(id=dish_id)
     item = Item.create(dish)
     item.size = size
-    item.save()
 
     topping_ids = post.getlist('toppings')
+    print(post)
     if topping_ids != None:
         topping_ids = [id_and_type.split(',') for id_and_type in topping_ids]
         global_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'global']
         local_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'local']
+
+        print(global_topping_ids)
+        print(local_topping_ids)
 
         global_toppings_in_range = dish.min_global_toppings <= len(global_topping_ids) <= dish.max_global_toppings
         local_toppings_in_range = dish.min_local_toppings <= len(local_topping_ids) <= dish.max_local_toppings
@@ -137,6 +122,8 @@ def add_to_cart(request):
             }
             request.POST = dish_data
             return render_dish(request)
+
+        item.save()
 
         if global_topping_ids != None:
             for topping_id in global_topping_ids:
@@ -178,13 +165,15 @@ def cart(request):
         'empty_cart': len(dishes_and_prices) == 0
     })
 
-def order(request):
+def place_order(request):
     customer = request.user.customer
 
     # reference the Order to the Customer
     customer.cart.customer = customer
     # set the date that the order was placed
     customer.cart.date = now()
+    customer.cart.placed = True
+    customer.cart.price = request.POST.get('price')
 
     customer.cart.save()
 
@@ -196,3 +185,38 @@ def order(request):
 
 def order_placed(request):
     return render(request, 'orders/order_placed.html')
+
+
+def admin_view_orders(request):
+    variables = dict()
+    if request.user.is_staff:
+        orders = Order.objects.filter(placed=True)
+
+        customers = [order.customer for order in orders]
+        dates = [order.date for order in orders]
+        ids = [order.id for order in orders]
+
+        variables['table'] = zip(customers, dates, ids)
+    return render(request, 'orders/admin_view_orders.html', variables)
+
+def view_order(request):
+    order_id = request.POST.get('order_id')
+    order = Order.objects.get(id=order_id)
+
+    variables = {
+        'customer': order.customer,
+        'date': order.date,
+        'items': [
+            {
+                'dish': item.dish,
+                'size': item.size,
+                'toppings': ', '.join(topping.name for topping in item.toppings.all()),
+                'price': item.calculate_price()
+            }
+            for item in order.item_set.all()
+        ],
+        'price': order.price
+    }
+    return render(request, 'orders/order.html', variables)
+
+

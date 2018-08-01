@@ -19,8 +19,9 @@ Your cart is empty!
 </table>
 <h5>Total: ${{total}}</h5>
 
-<form method='POST' action='/order/'>
+<form method='POST' action='/place_order/'>
     {% csrf_token %}
+    <input type="hidden" name="price" value="{{ total }}">
     <button>Order</button>
 </form>
 

@@ -1,0 +1,50 @@
+{% extends 'orders/base.html' %}
+
+{% block subheading %}Order{% endblock %}
+{% block content %}
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th scope="row">Customer</th>
+            <td>{{customer}}</td>
+        </tr>
+        <tr>
+            <th scope="row">Date</th>
+            <td>{{date}}</td>
+        </tr>
+        <tr>
+            <th scope="row">Total Price</th>
+            <td>${{price}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h5>Items included</h5>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Dish</th>
+            <th scope="col">Size</th>
+            <th scope="col">Toppings</th>
+            <th scope="col">Price</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{item.dish}}</td>
+            <td>{% if item.size != 'Regular' %}{{item.size}}{% else %}-{% endif %}</td>
+            <td>
+                {% if item.toppings %}{{item.toppings}}{% else %}-{% endif %}
+            </td>
+            <td>${{item.price}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}

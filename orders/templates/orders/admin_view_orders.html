@@ -1,0 +1,37 @@
+{% extends 'orders/base.html' %}
+
+{% block subheading %}Customer Orders{% endblock %}
+
+{% block content %}
+
+{% if user.is_staff %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">item</th>
+                <th scope="col">customer</th>
+                <th scope="col">date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer, date, id in table %}
+            <tr>
+                <td>
+                    <form method='POST' action='/order/'>
+                        {% csrf_token %}
+                        <input type='hidden' name='order_id' value='{{ id }}' >
+                        <input type="submit" name="order" value="View" class="btn btn-link">
+                    </form>
+                </td>
+                <td>{{ customer }}</td>
+                <td>{{ date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-warning" role="alert">
+        Since you're not staff, you can't look at this page.
+    </div>
+{% endif %}
+{% endblock %}

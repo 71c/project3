@@ -16,6 +16,8 @@ class Customer(models.Model):
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, null=True)
     date = models.DateTimeField(null=True)
+    placed = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=4, decimal_places=2, null=True)
 
 
 class Item(models.Model):
@@ -68,4 +70,5 @@ class Item(models.Model):
         if self.dish.menu_section.topping_price_is_included:
             return price
         else:
-            return price + sum(float(topping.price) for topping in self.toppings.all())
+            return price + sum(topping.price for topping in self.toppings.all())
+

@@ -71,3 +71,5 @@ def activate_account(request):
     r.save()
 
     return render(request, 'accounts/activated.html')
+
+

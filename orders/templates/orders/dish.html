@@ -46,10 +46,22 @@
     // I got this from https://stackoverflow.com/a/16775485/9911203
     var toppings = document.querySelectorAll('[name="toppings"]');
 
+
+    var inputs = document.getElementById("select_attribute_toppings_inputs");
+    inputs.innerHTML = "";
+
     toppings.forEach(element => {
       if (element.checked || element.selected) {
         var topping_price = parseFloat(document.getElementById(element.value.split(',')[0]).value);
         dish_price += topping_price;
+      }
+      if (element.selected) {
+        var inputs = document.getElementById("select_attribute_toppings_inputs");
+        var input = document.createElement("input");
+        input.setAttribute("type", "hidden");
+        input.setAttribute("name", "toppings");
+        input.setAttribute("value", element.value);
+        inputs.append(input);
       }
     });
 
@@ -65,10 +77,15 @@
 <form method='POST' action='/add_to_cart/'>
   {% csrf_token %}
 
+
+  <div id="select_attribute_toppings_inputs">
+
+  </div>
+
+
   <input type="hidden" name="dish_id" value="{{ dish_id }}">
 
   <h3>{{ dish_name }}</h3>
-
 
   {% if errors %}
     <ul>
@@ -145,14 +162,16 @@
 
   {% endfor %}
 
-
   <input type="submit" value="add to cart">
+
 </form>
 
 <input type="hidden" id="dish_price" value="">
 <input type="hidden" id="topping_price_is_included" value="{{ topping_price_is_included }}">
 <input type="hidden" id="there_is_one_size" value="{{ there_is_one_size }}">
 <input type="hidden" id="single_price" value="{{ single_price }}">
+
+
 
 <p id="price">
   {% if there_is_one_size %}
