@@ -1,0 +1,36 @@
+{% extends 'orders/base.html' %}
+
+{% block subheading %}Customer Orders{% endblock %}
+
+{% block content %}
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">item</th>
+            {% if user.is_staff %}
+                <th scope="col">customer</th>
+            {% endif %}
+            <th scope="col">date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer, date, id in table %}
+        <tr>
+            <td>
+                <form method='POST' action='/order/'>
+                    {% csrf_token %}
+                    <input type='hidden' name='order_id' value='{{ id }}' >
+                    <input type="submit" name="order" value="View" class="btn btn-link">
+                </form>
+            </td>
+            {% if user.is_staff %}
+                <td>{{ customer }}</td>
+            {% endif %}
+            <td>{{ date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

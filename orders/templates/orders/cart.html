@@ -5,18 +5,45 @@
 {% if empty_cart %}
 Your cart is empty!
 {% else %}
-<table>
-    <tr>
-        <th>item</th>
-        <th>price</th>
-    </tr>
-    {% for dish, price in cart %}
-    <tr>
-        <td>{{dish}}</td>
-        <td>${{price}}</td>
-    </tr>
-    {% endfor %}
+<!--<table>-->
+<!--    <tr>-->
+<!--        <th>item</th>-->
+<!--        <th>price</th>-->
+<!--    </tr>-->
+<!--    {% for dish, price in cart %}-->
+<!--    <tr>-->
+<!--        <td>{{dish}}</td>-->
+<!--        <td>${{price}}</td>-->
+<!--    </tr>-->
+<!--    {% endfor %}-->
+<!--</table>-->
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Dish</th>
+            <th scope="col">Size</th>
+            <th scope="col">Toppings</th>
+            <th scope="col">Price</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{item.dish}}</td>
+            <td>{% if item.size != 'Regular' %}{{item.size}}{% else %}-{% endif %}</td>
+            <td>
+                {% if item.toppings %}{{item.toppings}}{% else %}-{% endif %}
+            </td>
+            <td>${{item.price}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
+
+
 <h5>Total: ${{total}}</h5>
 
 <form method='POST' action='/place_order/'>

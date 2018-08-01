@@ -1,14 +1,17 @@
 {% extends 'orders/base.html' %}
 
+
 {% block subheading %}Order{% endblock %}
 {% block content %}
 
 <table class="table">
     <tbody>
+        {% if user.is_staff %}
         <tr>
             <th scope="row">Customer</th>
             <td>{{customer}}</td>
         </tr>
+        {% endif %}
         <tr>
             <th scope="row">Date</th>
             <td>{{date}}</td>
@@ -16,6 +19,10 @@
         <tr>
             <th scope="row">Total Price</th>
             <td>${{price}}</td>
+        </tr>
+        <tr>
+            <th scope="row">Completed</th>
+            <td>{{ completed }}</td>
         </tr>
     </tbody>
 </table>
@@ -46,5 +53,14 @@
     </tbody>
 </table>
 
+{% if user.is_staff %}
+    <form method="POST" action="{% url 'mark_order_complete' %}">
+        {% csrf_token %}
+        <input type="hidden" name="order_id" value="{{ order_id }}">
+        <button type="submit">Mark as complete</button>
+    </form>
+{% endif %}
+
 
 {% endblock %}
+

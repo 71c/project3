@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
@@ -92,14 +92,10 @@ def add_to_cart(request):
     item.size = size
 
     topping_ids = post.getlist('toppings')
-    print(post)
     if topping_ids != None:
         topping_ids = [id_and_type.split(',') for id_and_type in topping_ids]
         global_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'global']
         local_topping_ids = [topping_id for topping_id, topping_type in topping_ids if topping_type == 'local']
-
-        print(global_topping_ids)
-        print(local_topping_ids)
 
         global_toppings_in_range = dish.min_global_toppings <= len(global_topping_ids) <= dish.max_global_toppings
         local_toppings_in_range = dish.min_local_toppings <= len(local_topping_ids) <= dish.max_local_toppings
@@ -141,9 +137,12 @@ def add_to_cart(request):
         order.save()
         current_customer.cart = order
         current_customer.save()
-    item.order = current_customer.cart
 
+    item.order = current_customer.cart
     item.save()
+
+    current_customer.cart.update_price()
+    current_customer.cart.save()
 
     return redirect('added_to_cart')
 
@@ -154,16 +153,43 @@ def cart(request):
     current_customer = request.user.customer
     if current_customer.cart == None:
         dishes_and_prices = []
-    else:
-        customer_cart = current_customer.cart.item_set.all()
-        dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
-        dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
+    # else:
+        # customer_cart = current_customer.cart.item_set.all()
+        # dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
+        # dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
 
-    return render(request, 'orders/cart.html', {
-        'cart': dishes_and_prices,
-        'total': sum([a[1] for a in dishes_and_prices]),
-        'empty_cart': len(dishes_and_prices) == 0
-    })
+    # return render(request, 'orders/cart.html', {
+    #     'cart': dishes_and_prices,
+    #     'total': sum([a[1] for a in dishes_and_prices]),
+    #     'empty_cart': len(dishes_and_prices) == 0
+    # })
+
+    cart = current_customer.cart
+
+    if cart == None:
+        cart_items = []
+    else:
+        cart_items = cart.item_set.all()
+
+
+    empty_cart = len(cart_items) == 0
+
+    variables = {
+        'empty_cart': empty_cart
+    }
+    if not empty_cart:
+        variables['total'] = cart.price
+        variables['items'] = [
+            {
+                'dish': item.dish,
+                'size': item.size,
+                'toppings': ', '.join(topping.name for topping in item.toppings.all()),
+                'price': item.calculate_price()
+            }
+            for item in cart_items
+        ]
+    return render(request, 'orders/cart.html', variables)
+
 
 def place_order(request):
     customer = request.user.customer
@@ -173,7 +199,7 @@ def place_order(request):
     # set the date that the order was placed
     customer.cart.date = now()
     customer.cart.placed = True
-    customer.cart.price = request.POST.get('price')
+    customer.cart.update_price()
 
     customer.cart.save()
 
@@ -187,20 +213,28 @@ def order_placed(request):
     return render(request, 'orders/order_placed.html')
 
 
-def admin_view_orders(request):
-    variables = dict()
-    if request.user.is_staff:
-        orders = Order.objects.filter(placed=True)
+def view_orders(request):
+    orders = Order.objects.filter(placed=True)
 
-        customers = [order.customer for order in orders]
-        dates = [order.date for order in orders]
-        ids = [order.id for order in orders]
+    customers = [order.customer for order in orders]
+    dates = [order.date for order in orders]
+    ids = [order.id for order in orders]
+    completeds = [order.completed for order in orders]
 
-        variables['table'] = zip(customers, dates, ids)
-    return render(request, 'orders/admin_view_orders.html', variables)
+    orders_table = zip(customers, dates, ids, completeds)
+
+    # row[3] is the boolean "completed"
+    orders_table_pending = [row + ['Pending orders'] for row in orders_table if not row[3]]
+    orders_table_completed = [row + ['Completed orders'] for row in orders_table if row[3]]
+
+    variables = {
+        'orders_tables': [orders_table_pending, orders_table_completed]
+    }
+
+    return render(request, 'orders/view_orders.html', variables)
 
 def view_order(request):
-    order_id = request.POST.get('order_id')
+    order_id = request.POST.get('order_id', None)
     order = Order.objects.get(id=order_id)
 
     variables = {
@@ -211,12 +245,27 @@ def view_order(request):
                 'dish': item.dish,
                 'size': item.size,
                 'toppings': ', '.join(topping.name for topping in item.toppings.all()),
-                'price': item.calculate_price()
+                'price': item.calculate_price(),
             }
             for item in order.item_set.all()
         ],
-        'price': order.price
+        'price': order.price,
+        'order_id': order_id,
+        'completed': order.completed
     }
     return render(request, 'orders/order.html', variables)
 
+
+
+def mark_order_complete(request):
+    order_id = request.POST.get('order_id')
+
+    order = Order.objects.get(id=order_id)
+    order.completed = True
+    order.save()
+
+    request.POST = {'order_id': order_id}
+    # sends them back to the same page as if they
+    # went back to orders and clicked on the same one
+    return view_order(request)
 

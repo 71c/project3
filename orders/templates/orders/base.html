@@ -4,6 +4,8 @@
 Pinocchio's Pizza & Subs
 {% endblock %}
 
+{% block style %}{% endblock %}
+
 {% block header %}
 
 {% if not user.is_authenticated %}
@@ -17,9 +19,7 @@ Pinocchio's Pizza & Subs
   <a class="nav-link" href="/">menu</a>
   <a class="nav-link" href="{% url 'cart' %}">View cart</a>
   <a class="nav-link" href="{% url 'logout' %}">logout</a>
-  {% if user.is_staff %}
-    <a class="nav-link" href="{% url 'admin_view_orders' %}">View Customer Orders</a>
-  {% endif %}
+  <a class="nav-link" href="{% url 'view_orders' %}">View {% if user.is_staff %}Customer {% endif %}Orders</a>
 </nav>
 {% endif %}
 

@@ -5,26 +5,22 @@
 
 {% block style %}
 <style>
-/*  I borrowed a tiny bit of CSS from this website
-    http://eat24hrs.com/restaurants/order2/menu.php?id=70528  */
   .menu_section {
     padding: 8px 14px;
   }
+  td {
+    padding: 0rem !important;
+  }
   .menu_item_info input {
+  	padding: 1.125rem 1.5rem;
   	color: #1d1d1d;
   	font-weight: bold;
   	text-align: left;
-  	padding: 1.125rem 1.5rem;
-  }
-  td {
-    padding: 0px !important;
   }
 </style>
 {% endblock %}
 
-
 {% block subheading %}Menu{% endblock %}
-
 
 {% block content %}
 
@@ -35,19 +31,16 @@
   <tr>
     <td>
       <form method='POST' action='/dish/'>
-          {% csrf_token %}
-          <input type='hidden' value='{{ dish.id|slugify }}' name='dish_id'>
-          <div class="menu_item_info">
-            <input type="submit" name='dish' value="{{ dish.name }}" class="btn btn-link btn-block" style="color: inherit; text-decoration: none;">
-          </div>
+        {% csrf_token %}
+        <input type='hidden' value='{{ dish.id|slugify }}' name='dish_id'>
+        <div class="menu_item_info">
+          <input type="submit" name='dish' value="{{ dish.name }}" class="btn btn-link btn-block" style="color: inherit; text-decoration: none;">
+        </div>
       </form>
     </td>
-
   </tr>
   {% endfor %}
 </table>
 {% endfor %}
-
-
 
 {% endblock %}

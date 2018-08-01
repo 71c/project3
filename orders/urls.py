@@ -14,6 +14,7 @@ urlpatterns = [
     path("cart/", views.cart, name="cart"),
     path("place_order/", views.place_order, name="place_order"),
     path("order_placed/", views.order_placed, name="order_placed"),
-    path('admin_view_orders/', views.admin_view_orders, name='admin_view_orders'),
-    path('order/', views.view_order, name="view_order")
+    path('orders/', views.view_orders, name='view_orders'),
+    path('order/', views.view_order, name="view_order"),
+    url(r'^ajax/mark_order_complete/$', views.mark_order_complete, name='mark_order_complete'),
 ]
