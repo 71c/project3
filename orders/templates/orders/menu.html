@@ -9,14 +9,15 @@
     http://eat24hrs.com/restaurants/order2/menu.php?id=70528  */
   .menu_section {
     padding: 8px 14px;
-    color: white;
-    background: #b70e0e;
   }
   .menu_item_info input {
   	color: #1d1d1d;
-  	font-size: 16px;
   	font-weight: bold;
-  	padding-right: 100%;
+  	text-align: left;
+  	padding: 1.125rem 1.5rem;
+  }
+  td {
+    padding: 0px !important;
   }
 </style>
 {% endblock %}
@@ -26,27 +27,26 @@
 
 
 {% block content %}
-<div style="margin-left: 15px;">
-  {% for menu_section, items in menu %}
-  <h4 class="menu_section">{{ menu_section }}</h4>
-  <table class="table table-hover">
-    {% for dish in items.dishes %}
-    <tr>
-      <td>
-        <form method='POST' action='/dish/'>
-            {% csrf_token %}
-            <input type='hidden' value='{{ dish.id|slugify }}' name='dish_id'>
-            <div class="menu_item_info">
-              <input type="submit" name='dish' value="{{ dish.name }}" class="btn btn-link" style="color: inherit; text-decoration: none;">
-            </div>
-        </form>
-      </td>
 
-    </tr>
-    {% endfor %}
-  </table>
+{% for menu_section, items in menu %}
+<h4 class="menu_section">{{ menu_section }}</h4>
+<table class="table table-hover">
+  {% for dish in items.dishes %}
+  <tr>
+    <td>
+      <form method='POST' action='/dish/'>
+          {% csrf_token %}
+          <input type='hidden' value='{{ dish.id|slugify }}' name='dish_id'>
+          <div class="menu_item_info">
+            <input type="submit" name='dish' value="{{ dish.name }}" class="btn btn-link btn-block" style="color: inherit; text-decoration: none;">
+          </div>
+      </form>
+    </td>
+
+  </tr>
   {% endfor %}
-</div>
+</table>
+{% endfor %}
 
 
 

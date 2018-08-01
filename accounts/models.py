@@ -19,6 +19,8 @@ class Order(models.Model):
     placed = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=4, decimal_places=2, null=True)
 
+    # TODO: add status
+
 
 class Item(models.Model):
 
