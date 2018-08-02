@@ -19,14 +19,12 @@
     </style>
 {% endblock %}
 
-
-
 {% block content %}
 
-{% for menu_section, items in menu %}
-<h4 class="menu_section">{{ menu_section }}</h4>
+{% for data in menu %}
+<h4 class="menu_section">{{ data.title }}</h4>
 <table class="table table-hover">
-  {% for dish in items.dishes %}
+  {% for dish in data.dishes %}
   <tr>
     <td>
       <form method='POST' action='/dish/'>

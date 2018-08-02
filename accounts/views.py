@@ -12,8 +12,6 @@ from accounts import helpers
 from .forms import CustomUserCreationForm
 from .models import *
 
-
-
 # https://overiq.com/django/1.10/django-creating-users-using-usercreationform/
 def signup(request):
     if request.method == 'POST':

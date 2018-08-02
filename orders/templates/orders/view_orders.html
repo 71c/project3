@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Orders{% endblock %}
 
-{% block subheading %}Customer Orders{% endblock %}
+{% block subheading %}
+{% if user.is_authenticated %}Customer Orders{% else %}You have to sign in to see this!{% endif %}
+{% endblock %}
 
 {% load humanize %}
 
@@ -41,9 +43,11 @@
             </tbody>
         </table>
     {% else %}
+        <!-- No (Pending orders|Completed orders) -->
         No {{o.title}}!
     {% endif %}
 
 {% endfor %}
+
 
 {% endblock %}

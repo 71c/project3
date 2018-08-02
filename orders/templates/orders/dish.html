@@ -5,9 +5,18 @@
 {% block script %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById("topping_price_is_included").value === "False" && document.querySelectorAll('[name="toppings"]').length > 0) {
+    // keep updating price only if topping price is not included in dish's price and there are toppings
+    if (document.getElementById("topping_price_is_included").value === "False"
+        && document.querySelectorAll('[name="toppings"]').length > 0) {
+      // Initially I made it only update when certain elements were clicked
+      // but it didn't update when there was a <select> and you click a
+      // different option but not bring the <select> out of focus.
+      // This solves that. It works fine tbh.
       setInterval(update_price, 10);
     }
+
+    // the following three blocks of code add the price of the dish
+    // to a place at the bottom of the DOM that the JS can access.
 
     var small = document.getElementById('Small');
     if (small) {
@@ -25,35 +34,38 @@
       };
     }
 
-    if (! (small || large)) {
-      if (document.getElementById("there_is_one_size").value === "True")
-        document.getElementById('dish_price').value = "{{ single_price }}";
+    if (! (small || large) && document.getElementById("there_is_one_size").value === "True") {
+      document.getElementById('dish_price').value = "{{ single_price }}";
     }
   });
 
   function update_price() {
+    // get the dish price
     var dish_price = parseFloat(document.getElementById('dish_price').value);
+    // if there is only one price, get it here
     if (! dish_price) {
       dish_price = parseFloat(document.getElementById('price').innerHTML);
     }
+    // if no price was selected yet, just set it to 0
     if (! dish_price) {
       dish_price = 0;
     }
 
-    // I got this from https://stackoverflow.com/a/16775485/9911203
+    // all the toppings in the html
     var toppings = document.querySelectorAll('[name="toppings"]');
-
 
     var inputs = document.getElementById("select_attribute_toppings_inputs");
     inputs.innerHTML = "";
 
+    // add up the price
     toppings.forEach(element => {
       if (element.checked || element.selected) {
         var topping_price = parseFloat(document.getElementById(element.value.split(',')[0]).value);
         dish_price += topping_price;
       }
+      // If the element comes from a <select> element, the form doesn't pick
+      // it up so I have to put it again in an <input> element.
       if (element.selected) {
-        var inputs = document.getElementById("select_attribute_toppings_inputs");
         var input = document.createElement("input");
         input.setAttribute("type", "hidden");
         input.setAttribute("name", "toppings");
@@ -67,26 +79,19 @@
 </script>
 {% endblock %}
 
-
-
 {% block content %}
-
 <form method='POST' action='/add_to_cart/'>
   {% csrf_token %}
 
-
-  <div id="select_attribute_toppings_inputs">
-
-  </div>
-
+  <div id="select_attribute_toppings_inputs"></div>
 
   <input type="hidden" name="dish_id" value="{{ dish_id }}">
 
   {% if errors %}
     <ul>
-        {% for error in errors %}
-        <li class="error">{{ error }}</li>
-        {% endfor %}
+      {% for error in errors %}
+      <li class="error">{{ error }}</li>
+      {% endfor %}
     </ul>
   {% endif %}
 
@@ -104,16 +109,14 @@
     <input type="hidden" name="size" value="Regular">
   {% endif %}
 
-
   {% for min, max, topping_list, name in min_max_and_lists %}
     {% if max > 0 %}
-
       <!-- for the javascript  -->
       {% for topping in topping_list %}
         <input type="hidden" id="{{ topping.id }}" value="{{topping.price}}">
       {% endfor %}
 
-
+      <!--Some trickery to make the heading for choosing a topping/toppings appropriate-->
       <h5>
         Choose {% if name == 'local' %}extra {% endif %}topping{% if max > 1 %}s{% endif %}
 
@@ -126,24 +129,25 @@
       </h5>
 
       <div class="container-fluid"><div class="row">
-        <!--drop-down (select)-->
+
         {% if max == 1 and min == 0 %}
+          <!--drop-down (select)-->
           <select id="refresher">
             <option value="">None</option>
             {% for topping in topping_list %}
-              <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
+            <option name="toppings" value="{{topping.id}},{{name}}">{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</option>
             {% endfor %}
           </select>
-        <!--radios-->
         {% elif max == 1 %}
+          <!--radios-->
           {% for topping in topping_list %}
             <div class="custom-control custom-radio col-lg-3 col-sm-6" id="refresher">
               <input type="radio" id="{{topping.name}}!" class="custom-control-input" name="toppings" value="{{topping.id}},{{name}}">
               <label class="custom-control-label" for="{{topping.name}}!" >{{topping.name}}{% if not topping_price_is_included %} (${{ topping.price }}){% endif %}</label>
             </div>
           {% endfor %}
-        <!--checkboxes-->
         {% else %}
+          <!--checkboxes-->
           {% for topping in topping_list %}
             <div class="form-group form-check col-lg-3 col-sm-6" id="refresher">
               <input type="checkbox" class="form-check-input" id="{{topping.name}}!" name="toppings" value="{{topping.id}},{{name}}">
@@ -152,29 +156,26 @@
           {% endfor %}
         {% endif %}
       </div></div>
-
     {% endif %}
-
   {% endfor %}
 
+  <!--only if the user is logged in and has an associated customer-->
   {% if user.customer %}
     <input type="submit" value="add to cart" class="btn btn-primary">
   {% endif %}
 
 </form>
 
+<!--These are hidden inputs for reference by the JavaScript-->
 <input type="hidden" id="dish_price" value="">
 <input type="hidden" id="topping_price_is_included" value="{{ topping_price_is_included }}">
 <input type="hidden" id="there_is_one_size" value="{{ there_is_one_size }}">
 <input type="hidden" id="single_price" value="{{ single_price }}">
-
-
 
 <p id="price">
   {% if there_is_one_size %}
   Total: ${{ single_price }}
   {% endif %}
 </p>
-
 
 {% endblock %}

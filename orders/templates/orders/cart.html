@@ -7,7 +7,6 @@
 {% if empty_cart %}
 Your cart is empty!
 {% else %}
-
 <table class="table">
     <thead>
         <tr>
@@ -17,7 +16,6 @@ Your cart is empty!
             <th scope="col">Price</th>
         </tr>
     </thead>
-
     <tbody>
         {% for item in items %}
         <tr>
@@ -31,15 +29,12 @@ Your cart is empty!
         {% endfor %}
     </tbody>
 </table>
-
-
 <h5>Total: ${{total}}</h5>
-
 <form method='POST' action='/place_order/'>
     {% csrf_token %}
     <input type="hidden" name="price" value="{{ total }}">
     <button>Order</button>
 </form>
-
 {% endif %}
+
 {% endblock %}
