@@ -19,6 +19,7 @@ class Order(models.Model):
     placed = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=4, decimal_places=2, null=True)
     completed = models.BooleanField(default=False)
+    completed_date = models.DateTimeField(null=True)
 
     def update_price(self):
         self.price = sum(item.calculate_price() for item in self.item_set.all())

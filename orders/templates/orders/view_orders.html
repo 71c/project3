@@ -1,41 +1,48 @@
-{% extends 'orders/base.html' %}
+{% extends 'base.html' %}
+{% block title %}Orders{% endblock %}
 
 {% block subheading %}Customer Orders{% endblock %}
+
+{% load humanize %}
 
 {% block content %}
 
 {% for o in titles %}
     <h4>{{o.title}}</h4>
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th scope="col">item</th>
-                {% if user.is_staff %}
-                    <th scope="col">customer</th>
-                {% endif %}
-                <th scope="col">date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for customer, date, id, completed in table %}
-                {% if completed == o.condition %}
-                    <tr>
-                        <td>
-                            <form method='POST' action='/order/'>
-                                {% csrf_token %}
-                                <input type='hidden' name='order_id' value='{{ id }}' >
-                                <input type="submit" name="order" value="View" class="btn btn-link">
-                            </form>
-                        </td>
-                        {% if user.is_staff %}
-                            <td>{{ customer }}</td>
-                        {% endif %}
-                        <td>{{ date }}</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if o.any %}
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">item</th>
+                    {% if user.is_staff %}
+                        <th scope="col">customer</th>
+                    {% endif %}
+                    <th scope="col">date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer, date, id, completed in table %}
+                    {% if completed == o.condition %}
+                        <tr>
+                            <td>
+                                <form method='POST' action='/order/'>
+                                    {% csrf_token %}
+                                    <input type='hidden' name='order_id' value='{{ id }}' >
+                                    <input type="submit" name="order" value="View" class="btn btn-link">
+                                </form>
+                            </td>
+                            {% if user.is_staff %}
+                                <td>{{ customer }}</td>
+                            {% endif %}
+                            <td>{{ date | naturaltime }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        No {{o.title}}!
+    {% endif %}
 
 {% endfor %}
 

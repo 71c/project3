@@ -1,9 +1,6 @@
-{% extends 'orders/base.html' %}
-
-
-
+{% extends 'base.html' %}
 {% block title %}Home{% endblock %}
-
+{% block subheading %}{{ dish_name }}{% endblock %}
 
 {% block script %}
 <script>
@@ -70,7 +67,7 @@
 </script>
 {% endblock %}
 
-{% block subheading %}{{ dish_name }}{% endblock %}
+
 
 {% block content %}
 

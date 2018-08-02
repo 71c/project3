@@ -16,5 +16,5 @@ urlpatterns = [
     path("order_placed/", views.order_placed, name="order_placed"),
     path('orders/', views.view_orders, name='view_orders'),
     path('order/', views.view_order, name="view_order"),
-    url(r'^ajax/mark_order_complete/$', views.mark_order_complete, name='mark_order_complete'),
+    path('mark_order_complete/', views.mark_order_complete, name='mark_order_complete'),
 ]

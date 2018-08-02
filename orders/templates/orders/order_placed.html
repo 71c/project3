@@ -1,11 +1,7 @@
-{% extends 'orders/base.html' %}
-
-{% block title %}Item added to cart{% endblock %}
-
+{% extends 'base.html' %}
+{% block title %}Order placed{% endblock %}
+{% block subheading %}Your order has been placed.{% endblock %}
 
 {% block content %}
-<h5>
-Your order has been placed.
-</h5>
-
+<a href="{% url 'view_orders' %}">View orders</a>
 {% endblock %}

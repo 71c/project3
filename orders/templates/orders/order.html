@@ -1,7 +1,9 @@
-{% extends 'orders/base.html' %}
-
-
+{% extends 'base.html' %}
+{% block title%}Order{% endblock %}
 {% block subheading %}Order{% endblock %}
+
+{% load humanize %}
+
 {% block content %}
 
 <table class="table">
@@ -13,16 +15,25 @@
         </tr>
         {% endif %}
         <tr>
-            <th scope="row">Date</th>
-            <td>{{date}}</td>
-        </tr>
-        <tr>
             <th scope="row">Total Price</th>
             <td>${{price}}</td>
         </tr>
+         <tr>
+            <th scope="row">Date placed</th>
+            <td>{{date|naturaltime}}</td>
+        </tr>
         <tr>
-            <th scope="row">Completed</th>
-            <td>{{ completed }}</td>
+            <th scope="row">Status</th>
+            <td>
+                {% if completed %}
+                    Completed
+                    {% if completed_date %}
+                        ({{completed_date|naturaltime}})
+                    {% endif %}
+                {% else %}
+                    Pending
+                {%endif%}
+            </td>
         </tr>
     </tbody>
 </table>
@@ -45,7 +56,7 @@
             <td>{{item.dish}}</td>
             <td>{% if item.size != 'Regular' %}{{item.size}}{% else %}-{% endif %}</td>
             <td>
-                {% if item.toppings %}{{item.toppings}}{% else %}-{% endif %}
+                {% if item.toppings %}{{ item.toppings|join:", " }}{% else %}-{% endif %}
             </td>
             <td>${{item.price}}</td>
         </tr>

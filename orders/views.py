@@ -153,16 +153,6 @@ def cart(request):
     current_customer = request.user.customer
     if current_customer.cart == None:
         dishes_and_prices = []
-    # else:
-        # customer_cart = current_customer.cart.item_set.all()
-        # dishes_and_prices = [(f"{item.dish.menu_section}: {item.dish.name}", item.calculate_price()) for item in customer_cart]
-        # dishes_and_prices = [a for a in dishes_and_prices if a[1] != None]
-
-    # return render(request, 'orders/cart.html', {
-    #     'cart': dishes_and_prices,
-    #     'total': sum([a[1] for a in dishes_and_prices]),
-    #     'empty_cart': len(dishes_and_prices) == 0
-    # })
 
     cart = current_customer.cart
 
@@ -183,7 +173,7 @@ def cart(request):
             {
                 'dish': item.dish,
                 'size': item.size,
-                'toppings': ', '.join(topping.name for topping in item.toppings.all()),
+                'toppings': item.toppings.all(),
                 'price': item.calculate_price()
             }
             for item in cart_items
@@ -216,30 +206,25 @@ def order_placed(request):
 def view_orders(request):
     orders = Order.objects.filter(placed=True)
 
-
-
-
-
     customers = [order.customer for order in orders]
     dates = [order.date for order in orders]
     ids = [order.id for order in orders]
     completeds = [order.completed for order in orders]
+    # naturaltimes = [order.date]
 
-    orders_table = list(zip(customers, dates, ids, completeds))
-
-    # row[3] is the boolean "completed"
-    orders_table_pending = [row for row in orders_table if not row[3]]
-    orders_table_completed = [row for row in orders_table if row[3]]
+    orders_table = sorted(zip(customers, dates, ids, completeds), key = lambda x: x[1])[::-1]
 
     variables = {
         'titles': [
             {
                 'title': 'Pending orders',
-                'condition': False
+                'condition': False,
+                'any': any(not e for e in completeds)
             },
             {
                 'title': 'Completed orders',
-                'condition': True
+                'condition': True,
+                'any': any(completeds)
             }
         ],
         'table': orders_table,
@@ -259,14 +244,15 @@ def view_order(request):
             {
                 'dish': item.dish,
                 'size': item.size,
-                'toppings': ', '.join(topping.name for topping in item.toppings.all()),
+                'toppings': item.toppings.all(),
                 'price': item.calculate_price(),
             }
             for item in order.item_set.all()
         ],
         'price': order.price,
         'order_id': order_id,
-        'completed': order.completed
+        'completed': order.completed,
+        'completed_date': order.completed_date
     }
     return render(request, 'orders/order.html', variables)
 
@@ -277,6 +263,7 @@ def mark_order_complete(request):
 
     order = Order.objects.get(id=order_id)
     order.completed = True
+    order.completed_date = now()
     order.save()
 
     request.POST = {'order_id': order_id}

@@ -1,12 +1,7 @@
-{% extends 'orders/base.html' %}
-
+{% extends 'base.html' %}
 {% block title %}Item added to cart{% endblock %}
-
-
+{% block subheading %}Item added to cart!{% endblock %}
 
 {% block content %}
-<h5>
-Item added to cart!
-</h5>
 <a href="{% url 'cart' %}">View cart</a>
 {% endblock %}
