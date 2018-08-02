@@ -160,7 +160,9 @@
 
   {% endfor %}
 
-  <input type="submit" value="add to cart" class="btn btn-primary">
+  {% if user.customer %}
+    <input type="submit" value="add to cart" class="btn btn-primary">
+  {% endif %}
 
 </form>
 

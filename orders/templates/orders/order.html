@@ -53,7 +53,7 @@
     </tbody>
 </table>
 
-{% if user.is_staff %}
+{% if user.is_staff and not completed %}
     <form method="POST" action="{% url 'mark_order_complete' %}">
         {% csrf_token %}
         <input type="hidden" name="order_id" value="{{ order_id }}">

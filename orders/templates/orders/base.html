@@ -17,7 +17,9 @@ Pinocchio's Pizza & Subs
 <nav class="nav">
   <span class="nav-link">Hi <span class="font-weight-bold">{{ user.username }}</span>!</span>
   <a class="nav-link" href="/">menu</a>
-  <a class="nav-link" href="{% url 'cart' %}">View cart</a>
+  {% if user.customer %}
+    <a class="nav-link" href="{% url 'cart' %}">View cart</a>
+  {% endif %}
   <a class="nav-link" href="{% url 'logout' %}">logout</a>
   <a class="nav-link" href="{% url 'view_orders' %}">View {% if user.is_staff %}Customer {% endif %}Orders</a>
 </nav>

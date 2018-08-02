@@ -216,19 +216,34 @@ def order_placed(request):
 def view_orders(request):
     orders = Order.objects.filter(placed=True)
 
+
+
+
+
     customers = [order.customer for order in orders]
     dates = [order.date for order in orders]
     ids = [order.id for order in orders]
     completeds = [order.completed for order in orders]
 
-    orders_table = zip(customers, dates, ids, completeds)
+    orders_table = list(zip(customers, dates, ids, completeds))
 
     # row[3] is the boolean "completed"
-    orders_table_pending = [row + ['Pending orders'] for row in orders_table if not row[3]]
-    orders_table_completed = [row + ['Completed orders'] for row in orders_table if row[3]]
+    orders_table_pending = [row for row in orders_table if not row[3]]
+    orders_table_completed = [row for row in orders_table if row[3]]
 
     variables = {
-        'orders_tables': [orders_table_pending, orders_table_completed]
+        'titles': [
+            {
+                'title': 'Pending orders',
+                'condition': False
+            },
+            {
+                'title': 'Completed orders',
+                'condition': True
+            }
+        ],
+        'table': orders_table,
+        'conditions': [False, True]
     }
 
     return render(request, 'orders/view_orders.html', variables)
